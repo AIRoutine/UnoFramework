@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);NU1507;NETSDK1201;PRI257</NoWarn>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+</Project>

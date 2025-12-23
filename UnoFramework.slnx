@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/UnoFramework/UnoFramework.csproj" />
+    <Project Path="src/UnoFramework.Contracts/UnoFramework.Contracts.csproj" />
+    <Project Path="src/UnoFramework.Generators/UnoFramework.Generators.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/UnoFramework.Tests/UnoFramework.Tests.csproj" />
+  </Folder>
+</Solution>
