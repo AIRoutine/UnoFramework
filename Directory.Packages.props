@@ -1,27 +1,21 @@
 <Project ToolsVersion="15.0">
-  <!-- Inherit from root Directory.Packages.props -->
-  <Import Project="$([MSBuild]::GetPathOfFileAbove(Directory.Packages.props, $(MSBuildThisFileDirectory)..))" />
-
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
-
   <ItemGroup>
     <!-- Core Dependencies -->
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-    <PackageVersion Include="Shiny.Mediator" Version="3.0.0" />
-    <PackageVersion Include="Shiny.Mediator.Contracts" Version="3.0.0" />
-
+    <PackageVersion Include="Shiny.Mediator" Version="6.0.1" />
+    <PackageVersion Include="Shiny.Mediator.Contracts" Version="6.0.1" />
     <!-- Source Generator Dependencies -->
-    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.9.2" />
-
+    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.12.0-beta1.25218.8" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0" />
     <!-- Test Dependencies -->
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
-    <PackageVersion Include="NUnit" Version="4.1.0" />
-    <PackageVersion Include="NUnit3TestAdapter" Version="4.5.0" />
-    <PackageVersion Include="FluentAssertions" Version="6.12.0" />
-    <PackageVersion Include="coverlet.collector" Version="6.0.2" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+    <PackageVersion Include="NUnit" Version="4.4.0" />
+    <PackageVersion Include="NUnit3TestAdapter" Version="6.0.1" />
+    <PackageVersion Include="FluentAssertions" Version="8.8.0" />
+    <PackageVersion Include="coverlet.collector" Version="6.0.4" />
   </ItemGroup>
 </Project>
