@@ -8,4 +8,5 @@ namespace UnoFramework.ViewModels;
 /// </summary>
 /// <param name="LoggerFactory">The logger factory for creating typed loggers.</param>
 /// <param name="Mediator">The mediator for publishing events.</param>
-public record BaseServices(ILoggerFactory LoggerFactory, IMediator Mediator);
+/// <param name="Navigator">The navigator for page navigation.</param>
+public record BaseServices(ILoggerFactory LoggerFactory, IMediator Mediator, INavigator Navigator);

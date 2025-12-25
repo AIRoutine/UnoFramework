@@ -22,6 +22,11 @@ public abstract partial class ViewModelBase : ObservableObject
     protected IMediator Mediator { get; }
 
     /// <summary>
+    /// The navigator for page navigation.
+    /// </summary>
+    protected INavigator Navigator { get; }
+
+    /// <summary>
     /// Creates a new ViewModelBase with base services.
     /// </summary>
     /// <param name="baseServices">Common services for all ViewModels.</param>
@@ -29,6 +34,7 @@ public abstract partial class ViewModelBase : ObservableObject
     {
         Logger = baseServices.LoggerFactory.CreateLogger(GetType());
         Mediator = baseServices.Mediator;
+        Navigator = baseServices.Navigator;
     }
 
     /// <summary>
