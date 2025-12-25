@@ -1,0 +1,13 @@
+<Project>
+  <Import Project="$(MSBuildThisFileDirectory)..\..\Directory.Build.targets" Condition="Exists('$(MSBuildThisFileDirectory)..\..\Directory.Build.targets')" />
+
+  <!-- Pass XAML files to analyzers for style checking -->
+  <PropertyGroup>
+    <EnableXamlStyleAnalyzer Condition="'$(EnableXamlStyleAnalyzer)' == ''">true</EnableXamlStyleAnalyzer>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(EnableXamlStyleAnalyzer)' == 'true'">
+    <AdditionalFiles Include="@(Page)" />
+    <AdditionalFiles Include="@(ApplicationDefinition)" />
+  </ItemGroup>
+</Project>
