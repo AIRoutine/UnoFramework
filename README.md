@@ -50,10 +50,32 @@ Add reference to your project:
 Register services in App.xaml.cs:
 
 ```csharp
+using UnoFramework.Configuration;
+
 services.AddShinyMediator();
-services.AddSingleton<IEventCollector, UnoEventCollector>();
-services.AddSingleton<BaseServices>();
+services.AddShinyServiceRegistry();  // Auto-registers [Service] attributed classes
+services.AddUnoFramework();          // Explicit UnoFramework services
 ```
+
+### Dependency Injection
+
+UnoFramework uses `Shiny.Extensions.DependencyInjection` for automatic service registration.
+
+#### DI Constants
+
+Use `UnoFrameworkService` for consistent service registration:
+
+```csharp
+using UnoFramework;
+
+[Service(UnoFrameworkService.Lifetime, TryAdd = UnoFrameworkService.TryAdd)]
+public class MyService : IMyService { }
+```
+
+| Property | Value | Description |
+|----------|-------|-------------|
+| `Lifetime` | `Singleton` | Default lifetime for client-side apps |
+| `TryAdd` | `true` | Prevents duplicate registrations |
 
 Create a ViewModel:
 

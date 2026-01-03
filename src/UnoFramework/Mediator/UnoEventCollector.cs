@@ -11,6 +11,7 @@ namespace UnoFramework.Mediator;
 /// <summary>
 /// Collects event handlers from Uno Platform's visual tree for Shiny.Mediator.
 /// </summary>
+[Service(UnoFrameworkService.Lifetime, TryAdd = UnoFrameworkService.TryAdd)]
 public class UnoEventCollector : IEventCollector
 {
     readonly ILogger<UnoEventCollector> _logger;
