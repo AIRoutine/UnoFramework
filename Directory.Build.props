@@ -3,5 +3,17 @@
 
   <PropertyGroup>
     <LangVersion>latest</LangVersion>
+    <NetVersion>net10.0</NetVersion>
+
+    <!-- Uno Platform Target Frameworks - inherited from parent or standalone -->
+    <UNO_SINGLE_TARGET Condition="'$(UNO_SINGLE_TARGET)' == '' AND '$(OS)' == 'Windows_NT'">desktop</UNO_SINGLE_TARGET>
+    <UNO_SINGLE_TARGET Condition="'$(UNO_SINGLE_TARGET)' == ''">false</UNO_SINGLE_TARGET>
+
+    <UnoFrameworks Condition="'$(UNO_SINGLE_TARGET)' == 'false'">$(NetVersion)-android;$(NetVersion)-ios;$(NetVersion)-desktop;$(NetVersion)-browserwasm;$(NetVersion)</UnoFrameworks>
+    <UnoFrameworks Condition="'$(UNO_SINGLE_TARGET)' == 'desktop'">$(NetVersion)-desktop</UnoFrameworks>
+    <UnoFrameworks Condition="'$(UNO_SINGLE_TARGET)' == 'wasm'">$(NetVersion)-browserwasm</UnoFrameworks>
+
+    <!-- Contracts use only NetVersion (no platform-specific TFMs) -->
+    <UnoContractsFrameworks>$(NetVersion)</UnoContractsFrameworks>
   </PropertyGroup>
 </Project>
