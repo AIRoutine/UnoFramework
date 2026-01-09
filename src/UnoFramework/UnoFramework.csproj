@@ -1,17 +1,18 @@
 <Project Sdk="Uno.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFrameworks>$(UnoFrameworks)</TargetFrameworks>
+    <OutputType>Library</OutputType>
+    <UnoSingleProject>true</UnoSingleProject>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <Description>UnoFramework - ViewModel base classes, busy patterns, controls, and Shiny Mediator integration for Uno Platform</Description>
-  </PropertyGroup>
 
-  <PropertyGroup>
     <UnoFeatures>
       Toolkit;
       Navigation;
+      SkiaRenderer;
     </UnoFeatures>
   </PropertyGroup>
 
