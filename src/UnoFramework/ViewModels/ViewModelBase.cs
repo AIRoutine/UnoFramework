@@ -3,6 +3,7 @@ using UnoFramework.Busy;
 using UnoFramework.Contracts.Busy;
 using Microsoft.Extensions.Logging;
 using Shiny.Mediator;
+using UnoFramework.Contracts.Navigation;
 
 namespace UnoFramework.ViewModels;
 
@@ -11,6 +12,38 @@ namespace UnoFramework.ViewModels;
 /// </summary>
 public abstract partial class ViewModelBase : ObservableObject
 {
+    private CancellationTokenSource? _navigationCts;
+
+    /// <summary>
+    /// CancellationToken that is cancelled when navigating away from the ViewModel.
+    /// Use this token for async operations that should be cancelled on navigation.
+    /// </summary>
+    protected CancellationToken NavigationToken => _navigationCts?.Token ?? CancellationToken.None;
+
+    /// <summary>
+    /// Called when navigating to this ViewModel. Creates a new CancellationTokenSource.
+    /// </summary>
+    protected virtual void OnNavigatingTo()
+    {
+        _navigationCts?.Cancel();
+        _navigationCts?.Dispose();
+        _navigationCts = new CancellationTokenSource();
+    }
+
+    /// <summary>
+    /// Called when navigating away from this ViewModel. Cancels pending operations and resets busy state.
+    /// </summary>
+    protected virtual void OnNavigatingFrom()
+    {
+        _navigationCts?.Cancel();
+        _navigationCts?.Dispose();
+        _navigationCts = null;
+
+        // Safety reset - ensure busy state is cleared
+        IsBusy = false;
+        BusyMessage = null;
+    }
+
     /// <summary>
     /// The logger instance for this ViewModel.
     /// </summary>
