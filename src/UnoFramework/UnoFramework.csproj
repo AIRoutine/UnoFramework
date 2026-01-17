@@ -4,7 +4,6 @@
     <TargetFrameworks>$(UnoFrameworks)</TargetFrameworks>
     <OutputType>Library</OutputType>
     <UnoSingleProject>true</UnoSingleProject>
-    <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <Description>UnoFramework - ViewModel base classes, busy patterns, controls, and Shiny Mediator integration for Uno Platform</Description>

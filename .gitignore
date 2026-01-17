@@ -47,3 +47,10 @@ bld/
 *.coverage
 *.coveragexml
 coverage/
+
+# Temp files
+tmpclaude-*
+temp_*.png
+temp_*.txt
+*.tmp
+nul
