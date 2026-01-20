@@ -12,6 +12,7 @@
     <UnoFrameworks Condition="'$(UNO_SINGLE_TARGET)' == 'false'">$(NetVersion)-android;$(NetVersion)-ios;$(NetVersion)-desktop;$(NetVersion)-browserwasm;$(NetVersion)</UnoFrameworks>
     <UnoFrameworks Condition="'$(UNO_SINGLE_TARGET)' == 'desktop'">$(NetVersion)-desktop</UnoFrameworks>
     <UnoFrameworks Condition="'$(UNO_SINGLE_TARGET)' == 'wasm'">$(NetVersion)-browserwasm</UnoFrameworks>
+    <UnoFrameworks Condition="'$(UNO_SINGLE_TARGET)' == 'framebuffer'">$(NetVersion)-desktop</UnoFrameworks>
 
     <!-- Contracts use only NetVersion (no platform-specific TFMs) -->
     <UnoContractsFrameworks>$(NetVersion)</UnoContractsFrameworks>
