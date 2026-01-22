@@ -1,89 +1,37 @@
-using UnoFramework.Contracts.Navigation;
+using Microsoft.UI.Xaml.Navigation;
+using UnoFramework.ViewModels;
 
 namespace UnoFramework.Pages;
 
 /// <summary>
-/// Base page class that automatically triggers INavigationAware lifecycle on ViewModel.
-/// Supports both Frame navigation and Region-based navigation (Uno Extensions).
+/// Base page class that automatically triggers PageViewModel lifecycle methods.
+/// Calls OnNavigatedToAsync and OnNavigatedFromAsync on PageViewModel instances.
 /// </summary>
 public class BasePage : Page
 {
-    private bool _hasNavigatedTo;
-    private bool _isLoaded;
-
-    public BasePage()
-    {
-        Loaded += OnLoaded;
-        Unloaded += OnUnloaded;
-        DataContextChanged += OnDataContextChanged;
-    }
-
     /// <summary>
-    /// Handles DataContextChanged - triggers OnNavigatedTo when DataContext is set after Loaded.
+    /// Called when the page is navigated to. Triggers PageViewModel.OnNavigatedToAsync if DataContext is a PageViewModel.
     /// </summary>
-    private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
-    {
-        TryTriggerNavigatedTo();
-    }
-
-    /// <summary>
-    /// Handles Loaded event for Region-based navigation (Uno Extensions).
-    /// Frame navigation uses OnNavigatedTo instead.
-    /// </summary>
-    private void OnLoaded(object sender, RoutedEventArgs e)
-    {
-        _isLoaded = true;
-        TryTriggerNavigatedTo();
-    }
-
-    /// <summary>
-    /// Attempts to trigger OnNavigatedTo if conditions are met:
-    /// - Page is loaded
-    /// - DataContext is INavigationAware
-    /// - OnNavigatedTo hasn't been called yet
-    /// </summary>
-    private void TryTriggerNavigatedTo()
-    {
-        if (_isLoaded && !_hasNavigatedTo && DataContext is INavigationAware navigationAware)
-        {
-            _hasNavigatedTo = true;
-            navigationAware.OnNavigatedTo(null);
-        }
-    }
-
-    /// <summary>
-    /// Handles Unloaded event for Region-based navigation cleanup.
-    /// </summary>
-    private void OnUnloaded(object sender, RoutedEventArgs e)
-    {
-        _isLoaded = false;
-        if (_hasNavigatedTo && DataContext is INavigationAware navigationAware)
-        {
-            navigationAware.OnNavigatedFrom();
-            _hasNavigatedTo = false;
-        }
-    }
-
-    protected override void OnNavigatedTo(NavigationEventArgs e)
+    protected override async void OnNavigatedTo(NavigationEventArgs e)
     {
         base.OnNavigatedTo(e);
 
-        // Frame navigation - mark as navigated and trigger ViewModel
-        if (!_hasNavigatedTo && DataContext is INavigationAware navigationAware)
+        if (DataContext is PageViewModel viewModel)
         {
-            _hasNavigatedTo = true;
-            navigationAware.OnNavigatedTo(e.Parameter);
+            await viewModel.OnNavigatedToAsync(e);
         }
     }
 
-    protected override void OnNavigatedFrom(NavigationEventArgs e)
+    /// <summary>
+    /// Called when the page is navigated away from. Triggers PageViewModel.OnNavigatedFromAsync if DataContext is a PageViewModel.
+    /// </summary>
+    protected override async void OnNavigatedFrom(NavigationEventArgs e)
     {
         base.OnNavigatedFrom(e);
 
-        if (_hasNavigatedTo && DataContext is INavigationAware navigationAware)
+        if (DataContext is PageViewModel viewModel)
         {
-            navigationAware.OnNavigatedFrom();
-            _hasNavigatedTo = false;
+            await viewModel.OnNavigatedFromAsync(e);
         }
     }
 }

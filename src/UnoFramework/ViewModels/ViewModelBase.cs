@@ -31,6 +31,15 @@ public abstract partial class ViewModelBase : ObservableObject
     }
 
     /// <summary>
+    /// Called asynchronously when navigating to this ViewModel.
+    /// Override this to perform async operations when the ViewModel becomes active.
+    /// </summary>
+    protected virtual Task OnNavigatingToAsync(CancellationToken ct = default)
+    {
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
     /// Called when navigating away from this ViewModel. Cancels pending operations and resets busy state.
     /// </summary>
     protected virtual void OnNavigatingFrom()
@@ -42,6 +51,15 @@ public abstract partial class ViewModelBase : ObservableObject
         // Safety reset - ensure busy state is cleared
         IsBusy = false;
         BusyMessage = null;
+    }
+
+    /// <summary>
+    /// Called asynchronously when navigating away from this ViewModel.
+    /// Override this to perform cleanup operations before the ViewModel becomes inactive.
+    /// </summary>
+    protected virtual Task OnNavigatingFromAsync(CancellationToken ct = default)
+    {
+        return Task.CompletedTask;
     }
 
     /// <summary>
@@ -60,6 +78,11 @@ public abstract partial class ViewModelBase : ObservableObject
     protected INavigator Navigator { get; }
 
     /// <summary>
+    /// The route notifier for tracking navigation changes.
+    /// </summary>
+    protected IRouteNotifier RouteNotifier { get; }
+
+    /// <summary>
     /// Creates a new ViewModelBase with base services.
     /// </summary>
     /// <param name="baseServices">Common services for all ViewModels.</param>
@@ -69,10 +92,21 @@ public abstract partial class ViewModelBase : ObservableObject
         ArgumentNullException.ThrowIfNull(baseServices.LoggerFactory);
         ArgumentNullException.ThrowIfNull(baseServices.Mediator);
         ArgumentNullException.ThrowIfNull(baseServices.Navigator);
+        ArgumentNullException.ThrowIfNull(baseServices.RouteNotifier);
 
         Logger = baseServices.LoggerFactory.CreateLogger(GetType());
         Mediator = baseServices.Mediator;
         Navigator = baseServices.Navigator;
+        RouteNotifier = baseServices.RouteNotifier;
+    }
+
+    /// <summary>
+    /// Override this method to perform async initialization when the ViewModel is first created.
+    /// This is called once during ViewModel construction.
+    /// </summary>
+    protected virtual Task InitializeAsync(CancellationToken ct = default)
+    {
+        return Task.CompletedTask;
     }
 
     /// <summary>
