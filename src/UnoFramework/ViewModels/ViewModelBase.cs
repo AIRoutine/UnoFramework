@@ -65,6 +65,11 @@ public abstract partial class ViewModelBase : ObservableObject
     /// <param name="baseServices">Common services for all ViewModels.</param>
     protected ViewModelBase(BaseServices baseServices)
     {
+        ArgumentNullException.ThrowIfNull(baseServices);
+        ArgumentNullException.ThrowIfNull(baseServices.LoggerFactory);
+        ArgumentNullException.ThrowIfNull(baseServices.Mediator);
+        ArgumentNullException.ThrowIfNull(baseServices.Navigator);
+
         Logger = baseServices.LoggerFactory.CreateLogger(GetType());
         Mediator = baseServices.Mediator;
         Navigator = baseServices.Navigator;

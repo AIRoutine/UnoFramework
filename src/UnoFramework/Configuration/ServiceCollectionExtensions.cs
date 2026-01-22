@@ -18,7 +18,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddUnoFramework(this IServiceCollection services)
     {
         services.AddSingleton<IEventCollector, UnoEventCollector>();
-        services.AddSingleton<BaseServices>();
+        // BaseServices wird automatisch durch [Service] Attribute registriert
         return services;
     }
 }
