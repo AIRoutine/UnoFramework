@@ -17,8 +17,7 @@ public static class ServiceCollectionExtensions
     /// <returns>The service collection for chaining.</returns>
     public static IServiceCollection AddUnoFramework(this IServiceCollection services)
     {
-        services.AddSingleton<IEventCollector, UnoEventCollector>();
-        // BaseServices wird automatisch durch [Service] Attribute registriert
+        services.AddShinyServiceRegistry();
         return services;
     }
 }
