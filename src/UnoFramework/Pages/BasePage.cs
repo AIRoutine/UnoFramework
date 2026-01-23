@@ -102,6 +102,46 @@ public class BasePage : Page
         {
             _hasNavigatedTo = true;
             navigationAware.OnNavigatedTo(null);
+
+            // Publish PageNavigatedEvent if ViewModel implements IPageInfo
+            PublishPageNavigatedEvent();
+        }
+    }
+
+    /// <summary>
+    /// Publishes PageNavigatedEvent if DataContext implements IPageInfo.
+    /// </summary>
+    private void PublishPageNavigatedEvent()
+    {
+        try
+        {
+            var serviceProvider = Application.Current is IApplicationWithServices appWithServices
+                ? appWithServices.Services
+                : null;
+
+            var mediator = serviceProvider?.GetService<IMediator>();
+            if (mediator == null)
+                return;
+
+            if (DataContext is IPageInfo pageInfo)
+            {
+                mediator.Publish(new PageNavigatedEvent(
+                    pageInfo.PageType,
+                    pageInfo.PageTitle,
+                    pageInfo.MainHeaderViewModel));
+            }
+            else
+            {
+                // Default event for pages without IPageInfo
+                mediator.Publish(new PageNavigatedEvent(
+                    PageType.Home,
+                    "HEIMATPLATZ",
+                    null));
+            }
+        }
+        catch
+        {
+            // Silently ignore if mediator not available
         }
     }
 
