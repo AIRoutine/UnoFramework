@@ -1,7 +1,11 @@
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+using Shiny.Mediator;
+using UnoFramework.Contracts.Application;
 using UnoFramework.Contracts.Navigation;
+using UnoFramework.Contracts.Pages;
 
 namespace UnoFramework.Pages;
 
@@ -13,6 +17,52 @@ public class BasePage : Page
 {
     private bool _hasNavigatedTo;
     private bool _isLoaded;
+
+    /// <summary>
+    /// Identifies the HeaderMode dependency property.
+    /// </summary>
+    public static readonly DependencyProperty HeaderModeProperty =
+        DependencyProperty.Register(
+            nameof(HeaderMode),
+            typeof(HeaderMode),
+            typeof(BasePage),
+            new PropertyMetadata(HeaderMode.Menu, OnHeaderModeChanged));
+
+    /// <summary>
+    /// Gets or sets the header mode (Menu/Normal) for this page.
+    /// Menu mode shows a hamburger button, Normal mode shows a back button.
+    /// </summary>
+    public HeaderMode HeaderMode
+    {
+        get => (HeaderMode)GetValue(HeaderModeProperty);
+        set => SetValue(HeaderModeProperty, value);
+    }
+
+    private static void OnHeaderModeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is BasePage page && page._isLoaded)
+        {
+            page.PublishHeaderModeChanged((HeaderMode)e.NewValue);
+        }
+    }
+
+    private void PublishHeaderModeChanged(HeaderMode mode)
+    {
+        try
+        {
+            // Get mediator from application services
+            var serviceProvider = Application.Current is IApplicationWithServices appWithServices
+                ? appWithServices.Services
+                : null;
+
+            var mediator = serviceProvider?.GetService<IMediator>();
+            mediator?.Publish(new HeaderModeChangedEvent(mode));
+        }
+        catch
+        {
+            // Silently ignore if mediator not available
+        }
+    }
 
     public BasePage()
     {
@@ -36,6 +86,7 @@ public class BasePage : Page
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
         _isLoaded = true;
+        PublishHeaderModeChanged(HeaderMode);
         TryTriggerNavigatedTo();
     }
 
