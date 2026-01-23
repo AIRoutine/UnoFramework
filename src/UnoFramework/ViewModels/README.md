@@ -71,30 +71,32 @@ public partial class MyPageViewModel : PageViewModel
     {
     }
 
-    // Einmalige Initialisierung beim ViewModel-Erstellen
+    // Einmalige Initialisierung beim ersten Navigieren (lazy)
     protected override async Task InitializeAsync(CancellationToken ct = default)
     {
-        // Wird einmal beim Konstruieren aufgerufen
+        // Wird beim ersten Navigieren aufgerufen
         await LoadStaticDataAsync(ct);
     }
 
     // Wird bei jeder Navigation zur Page aufgerufen
     protected override async Task OnNavigatedToAsync(NavigationEventArgs e, CancellationToken ct = default)
     {
-        await base.OnNavigatedToAsync(e, ct);
-
         // Daten laden, die bei jedem Besuch aktualisiert werden sollen
         Logger.LogInformation("Navigated to page with parameter: {Parameter}", e.Parameter);
         await LoadDynamicDataAsync(ct);
     }
 
-    // Wird beim Verlassen der Page aufgerufen
+    // Wird nach dem Verlassen der Page aufgerufen (State speichern)
     protected override async Task OnNavigatedFromAsync(NavigationEventArgs e, CancellationToken ct = default)
     {
-        await base.OnNavigatedFromAsync(e, ct);
-
-        // State speichern oder Cleanup durchführen
+        // State speichern
         await SaveStateAsync(ct);
+    }
+
+    // Wird aufgerufen wenn die Navigation startet (Cleanup)
+    protected override async Task OnNavigatingFromAsync(CancellationToken ct = default)
+    {
+        await CleanupAsync(ct);
     }
 
     private async Task LoadDynamicDataAsync(CancellationToken ct)
@@ -136,7 +138,11 @@ public sealed partial class MyPage : BasePage
 }
 ```
 
-Die `BasePage` ruft automatisch `OnNavigatedToAsync` und `OnNavigatedFromAsync` auf dem ViewModel auf.
+Die `BasePage` ruft automatisch `OnNavigatedToAsync`, `OnNavigatingFromAsync` und `OnNavigatedFromAsync` auf dem ViewModel auf.
+
+**Wichtig:** `BasePage` behandelt korrekt den Fall, dass das `DataContext` (ViewModel) erst **nach** `OnNavigatedTo` gesetzt wird. Dies ist bei Uno Extensions Navigation üblich, wo das ViewModel über ViewMap dependency injection gesetzt wird. Die Navigation-Events werden zwischengespeichert und sobald das ViewModel gesetzt ist, wird `OnNavigatedToAsync` aufgerufen.
+
+**Hinweis:** `OnNavigatedFromAsync` kann auch durch `Frame.GetNavigationState` ausgelöst werden. Cleanup-Logik gehört daher in `OnNavigatingFromAsync`.
 
 ## RegionViewModel
 
@@ -169,8 +175,6 @@ public partial class MyRegionViewModel : RegionViewModel
     // Wird aufgerufen wenn die Region verlassen wird (Control Unloaded)
     protected override async Task OnNavigatingFromAsync(CancellationToken ct = default)
     {
-        await base.OnNavigatingFromAsync(ct);
-
         await CleanupAsync(ct);
     }
 }
@@ -204,7 +208,9 @@ public sealed partial class MyRegionControl : BaseRegionControl
 }
 ```
 
-Die `BaseRegionControl` ruft automatisch `OnNavigatedToAsync` (bei Loaded) und `OnNavigatedFromAsync` (bei Unloaded) auf dem ViewModel auf.
+Die `BaseRegionControl` ruft automatisch `OnNavigatedToAsync` (bei Loaded) sowie `OnNavigatingFromAsync` + `OnNavigatedFromAsync` (bei Unloaded) auf dem ViewModel auf.
+
+**Wichtig:** `BaseRegionControl` behandelt korrekt den Fall, dass das `DataContext` (ViewModel) erst **nach** `Loaded` gesetzt wird. Dies ist bei Uno Extensions Navigation üblich, wo das ViewModel über ViewMap dependency injection gesetzt wird. Die Lifecycle-Events werden zwischengespeichert und sobald das ViewModel gesetzt ist, wird `OnNavigatedToAsync` aufgerufen.
 
 ### Alternative: Manueller Aufruf
 
@@ -225,7 +231,7 @@ public sealed partial class MyRegionControl : UserControl
     {
         if (DataContext is RegionViewModel viewModel)
         {
-            await viewModel.OnNavigatedToAsync();
+            await viewModel.NotifyNavigatedToAsync();
         }
     }
 
@@ -233,7 +239,7 @@ public sealed partial class MyRegionControl : UserControl
     {
         if (DataContext is RegionViewModel viewModel)
         {
-            await viewModel.OnNavigatedFromAsync();
+            await viewModel.NotifyNavigatedFromAsync();
         }
     }
 }
@@ -259,8 +265,6 @@ public partial class UserDetailsViewModel : PageViewModel
 
     protected override async Task OnNavigatedToAsync(NavigationEventArgs e, CancellationToken ct = default)
     {
-        await base.OnNavigatedToAsync(e, ct);
-
         // Verwende _data um User zu laden
         await LoadUserAsync(_data.UserId, ct);
     }
@@ -278,15 +282,18 @@ await Navigator.NavigateViewModelAsync<UserDetailsViewModel>(this, data: data);
 
 ### 1. InitializeAsync vs OnNavigatedToAsync
 
-- **InitializeAsync**: Einmalige Initialisierung beim ViewModel-Erstellen
+- **InitializeAsync**: Einmalige Initialisierung beim ersten Navigieren (lazy)
   - Statische Daten laden
   - Subscriptions einrichten
   - Services initialisieren
+  - Wird von `BasePage`/`BaseRegionControl` automatisch beim ersten `OnNavigatedToAsync` ausgelöst
 
 - **OnNavigatedToAsync**: Bei jeder Navigation zur Page/Region
   - Dynamische Daten laden/aktualisieren
   - Parameter verarbeiten
   - UI State aktualisieren
+
+**Hinweis:** `OnNavigatedTo` wird vor dem Visual Tree aufgerufen. UI-spezifische Manipulationen sollten in `Loaded` oder über Bindings/VisualStates erfolgen.
 
 ### 2. NavigationToken verwenden
 
@@ -295,8 +302,6 @@ Alle async Operationen sollten `NavigationToken` verwenden:
 ```csharp
 protected override async Task OnNavigatedToAsync(NavigationEventArgs e, CancellationToken ct = default)
 {
-    await base.OnNavigatedToAsync(e, ct);
-
     // RICHTIG: Wird automatisch cancelled beim Wegnavigieren
     await LoadDataAsync(NavigationToken);
 
@@ -326,8 +331,6 @@ using (BeginGlobalBusy("Saving..."))
 ```csharp
 protected override async Task OnNavigatedToAsync(NavigationEventArgs e, CancellationToken ct = default)
 {
-    await base.OnNavigatedToAsync(e, ct);
-
     try
     {
         using (BeginBusy("Loading..."))
@@ -350,16 +353,17 @@ protected override async Task OnNavigatedToAsync(NavigationEventArgs e, Cancella
 ### 5. Cleanup in OnNavigatingFromAsync
 
 ```csharp
-protected override async Task OnNavigatedFromAsync(NavigationEventArgs e, CancellationToken ct = default)
+protected override async Task OnNavigatingFromAsync(CancellationToken ct = default)
 {
-    await base.OnNavigatedFromAsync(e, ct);
-
-    // State speichern
-    await SaveStateAsync(ct);
-
     // Resources freigeben
     // Subscriptions aufräumen
     // Timers stoppen
+}
+
+protected override async Task OnNavigatedFromAsync(NavigationEventArgs e, CancellationToken ct = default)
+{
+    // State speichern (nach Navigation)
+    await SaveStateAsync(ct);
 }
 ```
 
@@ -380,8 +384,6 @@ public partial class HomeViewModel : PageViewModel
 
     protected override async Task OnNavigatedToAsync(NavigationEventArgs e, CancellationToken ct = default)
     {
-        await base.OnNavigatedToAsync(e, ct);
-
         using (BeginBusy("Loading..."))
         {
             var response = await Mediator.Request(new GetWelcomeMessageRequest(), ct);
@@ -421,8 +423,6 @@ public partial class SidebarViewModel : RegionViewModel
 
     protected override async Task OnNavigatedToAsync(RouteChangedEventArgs e, CancellationToken ct = default)
     {
-        await base.OnNavigatedToAsync(e, ct);
-
         Logger.LogInformation("Sidebar region activated");
         // Dynamische Updates durchführen
     }

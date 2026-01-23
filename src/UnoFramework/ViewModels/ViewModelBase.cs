@@ -13,6 +13,8 @@ namespace UnoFramework.ViewModels;
 public abstract partial class ViewModelBase : ObservableObject
 {
     private CancellationTokenSource? _navigationCts;
+    private readonly object _initializeLock = new();
+    private Task? _initializeTask;
 
     /// <summary>
     /// CancellationToken that is cancelled when navigating away from the ViewModel.
@@ -25,8 +27,11 @@ public abstract partial class ViewModelBase : ObservableObject
     /// </summary>
     protected virtual void OnNavigatingTo()
     {
-        _navigationCts?.Cancel();
-        _navigationCts?.Dispose();
+        if (_navigationCts != null)
+        {
+            _navigationCts.Cancel();
+            _navigationCts.Dispose();
+        }
         _navigationCts = new CancellationTokenSource();
     }
 
@@ -44,11 +49,13 @@ public abstract partial class ViewModelBase : ObservableObject
     /// </summary>
     protected virtual void OnNavigatingFrom()
     {
-        _navigationCts?.Cancel();
-        _navigationCts?.Dispose();
-        _navigationCts = null;
+        if (_navigationCts != null)
+        {
+            _navigationCts.Cancel();
+            _navigationCts.Dispose();
+            _navigationCts = null;
+        }
 
-        // Safety reset - ensure busy state is cleared
         IsBusy = false;
         BusyMessage = null;
     }
@@ -66,6 +73,11 @@ public abstract partial class ViewModelBase : ObservableObject
     /// The logger instance for this ViewModel.
     /// </summary>
     protected ILogger Logger { get; }
+
+    /// <summary>
+    /// Internal logger access for framework components.
+    /// </summary>
+    internal ILogger LoggerInternal => Logger;
 
     /// <summary>
     /// The mediator for publishing events.
@@ -89,10 +101,6 @@ public abstract partial class ViewModelBase : ObservableObject
     protected ViewModelBase(BaseServices baseServices)
     {
         ArgumentNullException.ThrowIfNull(baseServices);
-        ArgumentNullException.ThrowIfNull(baseServices.LoggerFactory);
-        ArgumentNullException.ThrowIfNull(baseServices.Mediator);
-        ArgumentNullException.ThrowIfNull(baseServices.Navigator);
-        ArgumentNullException.ThrowIfNull(baseServices.RouteNotifier);
 
         Logger = baseServices.LoggerFactory.CreateLogger(GetType());
         Mediator = baseServices.Mediator;
@@ -101,12 +109,28 @@ public abstract partial class ViewModelBase : ObservableObject
     }
 
     /// <summary>
-    /// Override this method to perform async initialization when the ViewModel is first created.
-    /// This is called once during ViewModel construction.
+    /// Override this method to perform async initialization on first navigation (lazy).
+    /// This is called once on the first navigation to the ViewModel.
     /// </summary>
     protected virtual Task InitializeAsync(CancellationToken ct = default)
     {
         return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Ensures InitializeAsync is run once. Retries if the previous attempt faulted or was canceled.
+    /// </summary>
+    protected Task EnsureInitializedAsync(CancellationToken ct = default)
+    {
+        lock (_initializeLock)
+        {
+            if (_initializeTask == null || _initializeTask.IsCanceled || _initializeTask.IsFaulted)
+            {
+                _initializeTask = InitializeAsync(ct);
+            }
+
+            return _initializeTask;
+        }
     }
 
     /// <summary>

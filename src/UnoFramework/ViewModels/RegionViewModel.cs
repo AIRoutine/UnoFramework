@@ -22,8 +22,20 @@ public abstract partial class RegionViewModel : ViewModelBase
     /// <param name="ct">Cancellation token.</param>
     public virtual Task OnNavigatedToAsync(CancellationToken ct = default)
     {
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Framework entry point that ensures initialization and navigation lifecycle ordering.
+    /// Call this from the view when the region becomes active.
+    /// </summary>
+    public async Task NotifyNavigatedToAsync(CancellationToken ct = default)
+    {
         OnNavigatingTo();
-        return OnNavigatingToAsync(ct);
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(ct, NavigationToken);
+        await EnsureInitializedAsync(linkedCts.Token);
+        await OnNavigatingToAsync(linkedCts.Token);
+        await OnNavigatedToAsync(linkedCts.Token);
     }
 
     /// <summary>
@@ -34,7 +46,16 @@ public abstract partial class RegionViewModel : ViewModelBase
     /// <param name="ct">Cancellation token.</param>
     public virtual Task OnNavigatedFromAsync(CancellationToken ct = default)
     {
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Framework entry point that runs when the region is unloaded.
+    /// </summary>
+    public async Task NotifyNavigatedFromAsync(CancellationToken ct = default)
+    {
         OnNavigatingFrom();
-        return OnNavigatingFromAsync(ct);
+        await OnNavigatingFromAsync(ct);
+        await OnNavigatedFromAsync(ct);
     }
 }
