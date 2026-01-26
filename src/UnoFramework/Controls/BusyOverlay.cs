@@ -49,7 +49,15 @@ public partial class BusyOverlay : ContentControl
         nameof(BusyMessage),
         typeof(string),
         typeof(BusyOverlay),
-        new PropertyMetadata(null));
+        new PropertyMetadata(null, OnBusyMessageChanged));
+
+    private static void OnBusyMessageChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is BusyOverlay overlay)
+        {
+            overlay.UpdateMessageVisualState();
+        }
+    }
 
     /// <summary>
     /// Gets or sets the message to display while busy.
@@ -90,5 +98,12 @@ public partial class BusyOverlay : ContentControl
     private void UpdateVisualState()
     {
         VisualStateManager.GoToState(this, IsBusy ? "Busy" : "NotBusy", true);
+        UpdateMessageVisualState();
+    }
+
+    private void UpdateMessageVisualState()
+    {
+        var hasMessage = !string.IsNullOrWhiteSpace(BusyMessage);
+        VisualStateManager.GoToState(this, hasMessage ? "HasMessage" : "NoMessage", true);
     }
 }
