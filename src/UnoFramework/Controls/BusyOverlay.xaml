@@ -29,11 +29,12 @@
                                 <ProgressRing IsActive="True"
                                               Width="48"
                                               Height="48" />
-                                <TextBlock Text="{Binding BusyMessage, RelativeSource={RelativeSource TemplatedParent}}"
+                                <TextBlock x:Name="MessageTextBlock"
+                                           Text="{TemplateBinding BusyMessage}"
                                            Foreground="White"
                                            FontSize="14"
                                            TextAlignment="Center"
-                                           Visibility="{Binding BusyMessage, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource NullToCollapsedConverter}, FallbackValue=Collapsed}" />
+                                           Visibility="Collapsed" />
                             </StackPanel>
                         </Grid>
 
@@ -47,6 +48,14 @@
                                 <VisualState x:Name="Busy">
                                     <VisualState.Setters>
                                         <Setter Target="BusyOverlayPanel.Visibility" Value="Visible" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="MessageStates">
+                                <VisualState x:Name="NoMessage" />
+                                <VisualState x:Name="HasMessage">
+                                    <VisualState.Setters>
+                                        <Setter Target="MessageTextBlock.Visibility" Value="Visible" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
