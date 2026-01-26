@@ -14,51 +14,48 @@ public abstract partial class PageViewModel(BaseServices baseServices) : ViewMod
     /// Override this method to load data or perform initialization when the page becomes active.
     /// </summary>
     /// <param name="e">Navigation event arguments containing mode and parameter.</param>
-    /// <param name="ct">Cancellation token.</param>
-    public virtual Task OnNavigatedToAsync(NavigationEventArgs e, CancellationToken ct = default)
+    /// <param name="ct">Cancellation token that is cancelled when navigating away.</param>
+    protected virtual Task OnNavigatedToAsync(NavigationEventArgs e, CancellationToken ct = default)
     {
         return Task.CompletedTask;
-    }
-
-    /// <summary>
-    /// Framework entry point that ensures initialization and navigation lifecycle ordering.
-    /// Call this from the Page when navigating to the view.
-    /// </summary>
-    public async Task NotifyNavigatedToAsync(NavigationEventArgs e, CancellationToken ct = default)
-    {
-        OnNavigatingTo();
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(ct, NavigationToken);
-        await EnsureInitializedAsync(linkedCts.Token);
-        await OnNavigatingToAsync(linkedCts.Token);
-        await OnNavigatedToAsync(e, linkedCts.Token);
     }
 
     /// <summary>
     /// Called when the page is navigated away from.
-    /// Override this method to save state after navigation completes.
+    /// Override this method to save state or perform cleanup.
     /// </summary>
     /// <param name="e">Navigation event arguments.</param>
     /// <param name="ct">Cancellation token.</param>
-    public virtual Task OnNavigatedFromAsync(NavigationEventArgs e, CancellationToken ct = default)
+    protected virtual Task OnNavigatedFromAsync(NavigationEventArgs e, CancellationToken ct = default)
     {
         return Task.CompletedTask;
     }
 
     /// <summary>
-    /// Framework entry point that triggers cleanup before navigation completes.
+    /// Framework entry point called from BasePage.OnNavigatedTo.
+    /// Creates a navigation scope, runs initialization, then calls OnNavigatedToAsync.
     /// </summary>
-    public async Task NotifyNavigatingFromAsync(NavigatingCancelEventArgs e, CancellationToken ct = default)
+    internal async Task NotifyNavigatedToAsync(NavigationEventArgs e)
     {
-        _ = e;
-        OnNavigatingFrom();
-        await OnNavigatingFromAsync(ct);
+        BeginNavigationScope();
+        var ct = NavigationToken;
+        await EnsureInitializedAsync(ct);
+        await OnNavigatedToAsync(e, ct);
     }
 
     /// <summary>
-    /// Framework entry point that runs after navigation completes.
+    /// Framework entry point called from BasePage.OnNavigatedFrom.
+    /// Calls OnNavigatedFromAsync, then ends the navigation scope.
     /// </summary>
-    public Task NotifyNavigatedFromAsync(NavigationEventArgs e, CancellationToken ct = default)
+    internal async Task NotifyNavigatedFromAsync(NavigationEventArgs e)
     {
-        return OnNavigatedFromAsync(e, ct);
+        try
+        {
+            await OnNavigatedFromAsync(e, CancellationToken.None);
+        }
+        finally
+        {
+            EndNavigationScope();
+        }
     }
 }

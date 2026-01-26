@@ -23,53 +23,6 @@ public abstract partial class ViewModelBase : ObservableObject
     protected CancellationToken NavigationToken => _navigationCts?.Token ?? CancellationToken.None;
 
     /// <summary>
-    /// Called when navigating to this ViewModel. Creates a new CancellationTokenSource.
-    /// </summary>
-    protected virtual void OnNavigatingTo()
-    {
-        if (_navigationCts != null)
-        {
-            _navigationCts.Cancel();
-            _navigationCts.Dispose();
-        }
-        _navigationCts = new CancellationTokenSource();
-    }
-
-    /// <summary>
-    /// Called asynchronously when navigating to this ViewModel.
-    /// Override this to perform async operations when the ViewModel becomes active.
-    /// </summary>
-    protected virtual Task OnNavigatingToAsync(CancellationToken ct = default)
-    {
-        return Task.CompletedTask;
-    }
-
-    /// <summary>
-    /// Called when navigating away from this ViewModel. Cancels pending operations and resets busy state.
-    /// </summary>
-    protected virtual void OnNavigatingFrom()
-    {
-        if (_navigationCts != null)
-        {
-            _navigationCts.Cancel();
-            _navigationCts.Dispose();
-            _navigationCts = null;
-        }
-
-        IsBusy = false;
-        BusyMessage = null;
-    }
-
-    /// <summary>
-    /// Called asynchronously when navigating away from this ViewModel.
-    /// Override this to perform cleanup operations before the ViewModel becomes inactive.
-    /// </summary>
-    protected virtual Task OnNavigatingFromAsync(CancellationToken ct = default)
-    {
-        return Task.CompletedTask;
-    }
-
-    /// <summary>
     /// The logger instance for this ViewModel.
     /// </summary>
     protected ILogger Logger { get; }
@@ -131,6 +84,37 @@ public abstract partial class ViewModelBase : ObservableObject
 
             return _initializeTask;
         }
+    }
+
+    /// <summary>
+    /// Creates a new CancellationTokenSource for the current navigation scope.
+    /// Called internally by the Notify methods.
+    /// </summary>
+    internal void BeginNavigationScope()
+    {
+        if (_navigationCts != null)
+        {
+            _navigationCts.Cancel();
+            _navigationCts.Dispose();
+        }
+        _navigationCts = new CancellationTokenSource();
+    }
+
+    /// <summary>
+    /// Cancels the current navigation scope and resets busy state.
+    /// Called internally by the Notify methods.
+    /// </summary>
+    internal void EndNavigationScope()
+    {
+        if (_navigationCts != null)
+        {
+            _navigationCts.Cancel();
+            _navigationCts.Dispose();
+            _navigationCts = null;
+        }
+
+        IsBusy = false;
+        BusyMessage = null;
     }
 
     /// <summary>

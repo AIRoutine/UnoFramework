@@ -26,16 +26,8 @@ Die gemeinsame Basis für alle ViewModels mit folgenden Features:
 ### Lifecycle Methoden
 
 ```csharp
-// Einmalige Initialisierung
+// Einmalige Initialisierung (lazy, beim ersten Navigieren)
 protected virtual Task InitializeAsync(CancellationToken ct = default)
-
-// Navigation Lifecycle (sync)
-protected virtual void OnNavigatingTo()
-protected virtual void OnNavigatingFrom()
-
-// Navigation Lifecycle (async)
-protected virtual Task OnNavigatingToAsync(CancellationToken ct = default)
-protected virtual Task OnNavigatingFromAsync(CancellationToken ct = default)
 ```
 
 ### Busy State Management
@@ -62,6 +54,18 @@ using (BeginGlobalBusy("Saving..."))
 
 Für **Frame-basierte Navigation** (Navigation zwischen Pages).
 
+### Lifecycle
+
+Nur zwei Methoden zum Überschreiben:
+
+```csharp
+// Wird bei jeder Navigation zur Page aufgerufen
+protected virtual Task OnNavigatedToAsync(NavigationEventArgs e, CancellationToken ct = default)
+
+// Wird beim Verlassen der Page aufgerufen
+protected virtual Task OnNavigatedFromAsync(NavigationEventArgs e, CancellationToken ct = default)
+```
+
 ### Verwendung
 
 ```csharp
@@ -74,29 +78,20 @@ public partial class MyPageViewModel : PageViewModel
     // Einmalige Initialisierung beim ersten Navigieren (lazy)
     protected override async Task InitializeAsync(CancellationToken ct = default)
     {
-        // Wird beim ersten Navigieren aufgerufen
         await LoadStaticDataAsync(ct);
     }
 
     // Wird bei jeder Navigation zur Page aufgerufen
     protected override async Task OnNavigatedToAsync(NavigationEventArgs e, CancellationToken ct = default)
     {
-        // Daten laden, die bei jedem Besuch aktualisiert werden sollen
         Logger.LogInformation("Navigated to page with parameter: {Parameter}", e.Parameter);
         await LoadDynamicDataAsync(ct);
     }
 
-    // Wird nach dem Verlassen der Page aufgerufen (State speichern)
+    // Wird beim Verlassen der Page aufgerufen (State speichern)
     protected override async Task OnNavigatedFromAsync(NavigationEventArgs e, CancellationToken ct = default)
     {
-        // State speichern
         await SaveStateAsync(ct);
-    }
-
-    // Wird aufgerufen wenn die Navigation startet (Cleanup)
-    protected override async Task OnNavigatingFromAsync(CancellationToken ct = default)
-    {
-        await CleanupAsync(ct);
     }
 
     private async Task LoadDynamicDataAsync(CancellationToken ct)
@@ -138,15 +133,25 @@ public sealed partial class MyPage : BasePage
 }
 ```
 
-Die `BasePage` ruft automatisch `OnNavigatedToAsync`, `OnNavigatingFromAsync` und `OnNavigatedFromAsync` auf dem ViewModel auf.
+Die `BasePage` überschreibt `OnNavigatedTo` und `OnNavigatedFrom` und ruft automatisch die entsprechenden Methoden auf dem ViewModel auf.
 
 **Wichtig:** `BasePage` behandelt korrekt den Fall, dass das `DataContext` (ViewModel) erst **nach** `OnNavigatedTo` gesetzt wird. Dies ist bei Uno Extensions Navigation üblich, wo das ViewModel über ViewMap dependency injection gesetzt wird. Die Navigation-Events werden zwischengespeichert und sobald das ViewModel gesetzt ist, wird `OnNavigatedToAsync` aufgerufen.
-
-**Hinweis:** `OnNavigatedFromAsync` kann auch durch `Frame.GetNavigationState` ausgelöst werden. Cleanup-Logik gehört daher in `OnNavigatingFromAsync`.
 
 ## RegionViewModel
 
 Für **Region-basierte Navigation** (Uno Extensions Navigation mit Regions).
+
+### Lifecycle
+
+Nur zwei Methoden zum Überschreiben:
+
+```csharp
+// Wird aufgerufen wenn die Region geladen wird (Loaded)
+protected virtual Task OnNavigatedToAsync(CancellationToken ct = default)
+
+// Wird aufgerufen wenn die Region entladen wird (Unloaded)
+protected virtual Task OnNavigatedFromAsync(CancellationToken ct = default)
+```
 
 ### Verwendung
 
@@ -164,16 +169,14 @@ public partial class MyRegionViewModel : RegionViewModel
     }
 
     // Wird aufgerufen wenn zur Region navigiert wird (Control Loaded)
-    protected override async Task OnNavigatingToAsync(CancellationToken ct = default)
+    protected override async Task OnNavigatedToAsync(CancellationToken ct = default)
     {
-        await base.OnNavigatingToAsync(ct);
-
         Logger.LogInformation("Region activated");
         await LoadRegionDataAsync(ct);
     }
 
     // Wird aufgerufen wenn die Region verlassen wird (Control Unloaded)
-    protected override async Task OnNavigatingFromAsync(CancellationToken ct = default)
+    protected override async Task OnNavigatedFromAsync(CancellationToken ct = default)
     {
         await CleanupAsync(ct);
     }
@@ -208,7 +211,7 @@ public sealed partial class MyRegionControl : BaseRegionControl
 }
 ```
 
-Die `BaseRegionControl` ruft automatisch `OnNavigatedToAsync` (bei Loaded) sowie `OnNavigatingFromAsync` + `OnNavigatedFromAsync` (bei Unloaded) auf dem ViewModel auf.
+Die `BaseRegionControl` ruft automatisch `OnNavigatedToAsync` (bei Loaded) und `OnNavigatedFromAsync` (bei Unloaded) auf dem ViewModel auf.
 
 **Wichtig:** `BaseRegionControl` behandelt korrekt den Fall, dass das `DataContext` (ViewModel) erst **nach** `Loaded` gesetzt wird. Dies ist bei Uno Extensions Navigation üblich, wo das ViewModel über ViewMap dependency injection gesetzt wird. Die Lifecycle-Events werden zwischengespeichert und sobald das ViewModel gesetzt ist, wird `OnNavigatedToAsync` aufgerufen.
 
@@ -350,19 +353,15 @@ protected override async Task OnNavigatedToAsync(NavigationEventArgs e, Cancella
 }
 ```
 
-### 5. Cleanup in OnNavigatingFromAsync
+### 5. Cleanup in OnNavigatedFromAsync
 
 ```csharp
-protected override async Task OnNavigatingFromAsync(CancellationToken ct = default)
+protected override async Task OnNavigatedFromAsync(NavigationEventArgs e, CancellationToken ct = default)
 {
+    // State speichern
     // Resources freigeben
     // Subscriptions aufräumen
     // Timers stoppen
-}
-
-protected override async Task OnNavigatedFromAsync(NavigationEventArgs e, CancellationToken ct = default)
-{
-    // State speichern (nach Navigation)
     await SaveStateAsync(ct);
 }
 ```
@@ -421,7 +420,7 @@ public partial class SidebarViewModel : RegionViewModel
         MenuItems = new ObservableCollection<MenuItem>(response.Items);
     }
 
-    protected override async Task OnNavigatedToAsync(RouteChangedEventArgs e, CancellationToken ct = default)
+    protected override async Task OnNavigatedToAsync(CancellationToken ct = default)
     {
         Logger.LogInformation("Sidebar region activated");
         // Dynamische Updates durchführen
