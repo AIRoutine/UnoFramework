@@ -6,12 +6,14 @@
     <NetVersion>net10.0</NetVersion>
 
     <!-- Uno Platform Target Frameworks - inherited from parent or standalone -->
-    <UNO_SINGLE_TARGET Condition="'$(UNO_SINGLE_TARGET)' == '' AND '$(OS)' == 'Windows_NT'">desktop</UNO_SINGLE_TARGET>
-    <UNO_SINGLE_TARGET Condition="'$(UNO_SINGLE_TARGET)' == ''">false</UNO_SINGLE_TARGET>
+    <!-- Fallback nur wenn nicht von Parent übernommen -->
+    <UNO_SINGLE_TARGET Condition="'$(UNO_SINGLE_TARGET)' == ''">desktop</UNO_SINGLE_TARGET>
 
     <UnoFrameworks Condition="'$(UNO_SINGLE_TARGET)' == 'false'">$(NetVersion)-android;$(NetVersion)-ios;$(NetVersion)-desktop;$(NetVersion)-browserwasm;$(NetVersion)</UnoFrameworks>
     <UnoFrameworks Condition="'$(UNO_SINGLE_TARGET)' == 'desktop'">$(NetVersion)-desktop</UnoFrameworks>
     <UnoFrameworks Condition="'$(UNO_SINGLE_TARGET)' == 'wasm'">$(NetVersion)-browserwasm</UnoFrameworks>
+    <UnoFrameworks Condition="'$(UNO_SINGLE_TARGET)' == 'android'">$(NetVersion)-android</UnoFrameworks>
+    <UnoFrameworks Condition="'$(UNO_SINGLE_TARGET)' == 'ios'">$(NetVersion)-ios</UnoFrameworks>
     <UnoFrameworks Condition="'$(UNO_SINGLE_TARGET)' == 'framebuffer'">$(NetVersion)-desktop</UnoFrameworks>
 
     <!-- Contracts use only NetVersion (no platform-specific TFMs) -->
