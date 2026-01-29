@@ -17,10 +17,9 @@
 
                         <!-- Busy Overlay -->
                         <Grid x:Name="BusyOverlayPanel"
-                              Visibility="Collapsed"
-                              Background="{TemplateBinding OverlayBackground}">
+                              Visibility="Collapsed">
                             <Grid.Background>
-                                <SolidColorBrush Color="Black" Opacity="0.5" />
+                                <SolidColorBrush Color="{ThemeResource SurfaceColor}" />
                             </Grid.Background>
 
                             <StackPanel HorizontalAlignment="Center"
