@@ -1,8 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
-using Shiny.Mediator.Infrastructure;
-using UnoFramework.Mediator;
-using UnoFramework.ViewModels;
-
 namespace UnoFramework.Configuration;
 
 /// <summary>
@@ -17,7 +12,7 @@ public static class ServiceCollectionExtensions
     /// <returns>The service collection for chaining.</returns>
     public static IServiceCollection AddUnoFramework(this IServiceCollection services)
     {
-        services.AddShinyServiceRegistry();
+        _ = services.AddShinyServiceRegistry();
         return services;
     }
 }
