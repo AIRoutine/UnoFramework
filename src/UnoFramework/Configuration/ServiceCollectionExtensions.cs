@@ -12,7 +12,7 @@ public static class ServiceCollectionExtensions
     /// <returns>The service collection for chaining.</returns>
     public static IServiceCollection AddUnoFramework(this IServiceCollection services)
     {
-        _ = services.AddShinyServiceRegistry();
+        services = services.AddShinyServiceRegistry();
         return services;
     }
 }
