@@ -18,10 +18,7 @@
     <!-- Contracts use only NetVersion (no platform-specific TFMs) -->
     <UnoContractsFrameworks>$(NetVersion)</UnoContractsFrameworks>
 
-    <!-- Disable strict code analysis for submodule -->
-    <EnableNETAnalyzers>false</EnableNETAnalyzers>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
-    <AnalysisLevel>none</AnalysisLevel>
+    <!-- Code analysis inherited from root Directory.Build.props -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 </Project>

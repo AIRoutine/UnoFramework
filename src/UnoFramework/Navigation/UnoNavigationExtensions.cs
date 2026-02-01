@@ -1,5 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
-using Shiny.Mediator;
 using UnoFramework.Navigation.Handlers;
 
 namespace UnoFramework.Navigation;
@@ -18,8 +16,9 @@ public static class UnoNavigationExtensions
     /// <returns>The builder for chaining.</returns>
     public static ShinyMediatorBuilder AddUnoNavigationCommands(this ShinyMediatorBuilder builder)
     {
-        builder.Services.AddSingleton(typeof(ICommandHandler<>), typeof(UnoNavigationCommandHandler<>));
-        builder.Services.AddSingleton(typeof(ICommandHandler<>), typeof(UnoRegionNavigationCommandHandler<>));
+        ArgumentNullException.ThrowIfNull(builder);
+        _ = builder.Services.AddSingleton(typeof(ICommandHandler<>), typeof(UnoNavigationCommandHandler<>));
+        _ = builder.Services.AddSingleton(typeof(ICommandHandler<>), typeof(UnoRegionNavigationCommandHandler<>));
         return builder;
     }
 }

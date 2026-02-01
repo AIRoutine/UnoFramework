@@ -1,5 +1,3 @@
-using Microsoft.UI.Xaml.Navigation;
-
 namespace UnoFramework.ViewModels;
 
 /// <summary>
@@ -15,10 +13,8 @@ public abstract partial class PageViewModel(BaseServices baseServices) : ViewMod
     /// </summary>
     /// <param name="e">Navigation event arguments containing mode and parameter.</param>
     /// <param name="ct">Cancellation token that is cancelled when navigating away.</param>
-    protected virtual Task OnNavigatedToAsync(NavigationEventArgs e, CancellationToken ct = default)
-    {
-        return Task.CompletedTask;
-    }
+    protected virtual Task OnNavigatedToAsync(NavigationEventArgs e, CancellationToken ct = default) =>
+        Task.CompletedTask;
 
     /// <summary>
     /// Called when the page is navigated away from.
@@ -26,10 +22,8 @@ public abstract partial class PageViewModel(BaseServices baseServices) : ViewMod
     /// </summary>
     /// <param name="e">Navigation event arguments.</param>
     /// <param name="ct">Cancellation token.</param>
-    protected virtual Task OnNavigatedFromAsync(NavigationEventArgs e, CancellationToken ct = default)
-    {
-        return Task.CompletedTask;
-    }
+    protected virtual Task OnNavigatedFromAsync(NavigationEventArgs e, CancellationToken ct = default) =>
+        Task.CompletedTask;
 
     /// <summary>
     /// Framework entry point called from BasePage.OnNavigatedTo.
@@ -39,8 +33,8 @@ public abstract partial class PageViewModel(BaseServices baseServices) : ViewMod
     {
         BeginNavigationScope();
         var ct = NavigationToken;
-        await EnsureInitializedAsync(ct);
-        await OnNavigatedToAsync(e, ct);
+        await EnsureInitializedAsync(ct).ConfigureAwait(true);
+        await OnNavigatedToAsync(e, ct).ConfigureAwait(true);
     }
 
     /// <summary>
@@ -51,7 +45,7 @@ public abstract partial class PageViewModel(BaseServices baseServices) : ViewMod
     {
         try
         {
-            await OnNavigatedFromAsync(e, CancellationToken.None);
+            await OnNavigatedFromAsync(e, CancellationToken.None).ConfigureAwait(true);
         }
         finally
         {

@@ -1,6 +1,4 @@
 using Microsoft.Extensions.Logging;
-using Shiny.Mediator;
-using Uno.Extensions.Navigation;
 
 namespace UnoFramework.ViewModels;
 

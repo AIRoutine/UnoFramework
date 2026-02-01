@@ -2,19 +2,18 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using UnoFramework.Busy;
 using UnoFramework.Contracts.Busy;
 using Microsoft.Extensions.Logging;
-using Shiny.Mediator;
-using UnoFramework.Contracts.Navigation;
 
 namespace UnoFramework.ViewModels;
 
 /// <summary>
 /// Base class for all ViewModels providing logging, mediator, and busy state.
 /// </summary>
-public abstract partial class ViewModelBase : ObservableObject
+public abstract partial class ViewModelBase : ObservableObject, IDisposable
 {
     private CancellationTokenSource? _navigationCts;
-    private readonly object _initializeLock = new();
+    private readonly Lock _initializeLock = new();
     private Task? _initializeTask;
+    private bool _disposed;
 
     /// <summary>
     /// CancellationToken that is cancelled when navigating away from the ViewModel.
@@ -65,10 +64,8 @@ public abstract partial class ViewModelBase : ObservableObject
     /// Override this method to perform async initialization on first navigation (lazy).
     /// This is called once on the first navigation to the ViewModel.
     /// </summary>
-    protected virtual Task InitializeAsync(CancellationToken ct = default)
-    {
-        return Task.CompletedTask;
-    }
+    protected virtual Task InitializeAsync(CancellationToken ct = default) =>
+        Task.CompletedTask;
 
     /// <summary>
     /// Ensures InitializeAsync is run once. Retries if the previous attempt faulted or was canceled.
@@ -97,6 +94,7 @@ public abstract partial class ViewModelBase : ObservableObject
             _navigationCts.Cancel();
             _navigationCts.Dispose();
         }
+
         _navigationCts = new CancellationTokenSource();
     }
 
@@ -134,10 +132,8 @@ public abstract partial class ViewModelBase : ObservableObject
     /// </summary>
     /// <param name="message">Optional message to display during the busy state.</param>
     /// <returns>A disposable scope that automatically clears the busy state when disposed.</returns>
-    protected BusyScope BeginBusy(string? message = null)
-    {
-        return new BusyScope(this, message);
-    }
+    protected BusyScope BeginBusy(string? message = null) =>
+        new(this, message);
 
     /// <summary>
     /// Begins a global busy scope. Use with 'using' statement for automatic cleanup.
@@ -145,15 +141,11 @@ public abstract partial class ViewModelBase : ObservableObject
     /// </summary>
     /// <param name="message">Optional message to display during the busy state.</param>
     /// <returns>A disposable scope that automatically clears the global busy state when disposed.</returns>
-    protected GlobalBusyScope BeginGlobalBusy(string? message = null)
-    {
-        return new GlobalBusyScope(Mediator, PublishGlobalBusyAsync, message);
-    }
+    protected GlobalBusyScope BeginGlobalBusy(string? message = null) =>
+        new(PublishGlobalBusyAsync, message);
 
-    private Task PublishGlobalBusyAsync(bool isBusy, string? message, CancellationToken ct)
-    {
-        return Mediator.Publish(new GlobalBusyEvent(isBusy, message), ct);
-    }
+    private Task<IMediatorContext> PublishGlobalBusyAsync(bool isBusy, string? message, CancellationToken ct) =>
+        Mediator.Publish(new GlobalBusyEvent(isBusy, message), ct);
 
     /// <summary>
     /// Sets the busy state with an optional message.
@@ -164,5 +156,29 @@ public abstract partial class ViewModelBase : ObservableObject
     {
         IsBusy = isBusy;
         BusyMessage = isBusy ? message : null;
+    }
+
+    /// <summary>
+    /// Disposes the ViewModel and releases the navigation CancellationTokenSource.
+    /// </summary>
+    /// <param name="disposing">True if called from Dispose, false if from finalizer.</param>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_disposed)
+        {
+            if (disposing)
+            {
+                _navigationCts?.Dispose();
+            }
+
+            _disposed = true;
+        }
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
     }
 }

@@ -4,24 +4,15 @@ namespace UnoFramework.Navigation.Commands;
 /// Class-based implementation of <see cref="IUnoRegionNavigationCommand"/>.
 /// Use this when you need a mutable command or inheritance.
 /// </summary>
-public class UnoRegionNavigationCommand : IUnoRegionNavigationCommand
+/// <param name="regionName">The target region name.</param>
+/// <param name="viewName">The view to display in the region.</param>
+public class UnoRegionNavigationCommand(string regionName, string viewName) : IUnoRegionNavigationCommand
 {
-    /// <summary>
-    /// Creates a new region navigation command.
-    /// </summary>
-    /// <param name="regionName">The target region name.</param>
-    /// <param name="viewName">The view to display in the region.</param>
-    public UnoRegionNavigationCommand(string regionName, string viewName)
-    {
-        RegionName = regionName;
-        ViewName = viewName;
-    }
+    /// <inheritdoc />
+    public string RegionName { get; } = regionName;
 
     /// <inheritdoc />
-    public string RegionName { get; }
-
-    /// <inheritdoc />
-    public string ViewName { get; }
+    public string ViewName { get; } = viewName;
 
     /// <inheritdoc />
     public object? Data { get; set; }

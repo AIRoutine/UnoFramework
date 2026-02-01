@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Logging;
-using Microsoft.UI.Xaml.Navigation;
 using UnoFramework.ViewModels;
 
 namespace UnoFramework.Pages;
@@ -16,22 +15,24 @@ public class BasePage : Page
     /// <summary>
     /// Creates a new BasePage and subscribes to DataContextChanged.
     /// </summary>
-    public BasePage()
-    {
-        DataContextChanged += OnDataContextChanged;
-    }
+    public BasePage() => DataContextChanged += OnDataContextChangedAsync;
 
     /// <summary>
     /// Handles DataContextChanged - triggers OnNavigatedToAsync if we've already navigated.
     /// </summary>
-    private async void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+#pragma warning disable CA1031 // Catch generic Exception in async void event handler to prevent app crash
+    private async void OnDataContextChangedAsync(FrameworkElement sender, DataContextChangedEventArgs args)
     {
         if (_pendingNavigationEventArgs != null && !_hasNavigatedTo && DataContext is PageViewModel viewModel)
         {
             _hasNavigatedTo = true;
             try
             {
-                await viewModel.NotifyNavigatedToAsync(_pendingNavigationEventArgs);
+                await viewModel.NotifyNavigatedToAsync(_pendingNavigationEventArgs).ConfigureAwait(true);
+            }
+            catch (OperationCanceledException)
+            {
+                // Navigation was cancelled - expected behavior
             }
             catch (Exception ex)
             {
@@ -43,11 +44,13 @@ public class BasePage : Page
             }
         }
     }
+#pragma warning restore CA1031
 
     /// <summary>
     /// Called when the page is navigated to. Triggers PageViewModel.OnNavigatedToAsync.
     /// If DataContext is not set yet, waits for DataContextChanged.
     /// </summary>
+#pragma warning disable CA1031 // Catch generic Exception in async void event handler to prevent app crash
     protected override async void OnNavigatedTo(NavigationEventArgs e)
     {
         base.OnNavigatedTo(e);
@@ -57,7 +60,11 @@ public class BasePage : Page
             _hasNavigatedTo = true;
             try
             {
-                await viewModel.NotifyNavigatedToAsync(e);
+                await viewModel.NotifyNavigatedToAsync(e).ConfigureAwait(true);
+            }
+            catch (OperationCanceledException)
+            {
+                // Navigation was cancelled - expected behavior
             }
             catch (Exception ex)
             {
@@ -69,10 +76,12 @@ public class BasePage : Page
             _pendingNavigationEventArgs = e;
         }
     }
+#pragma warning restore CA1031
 
     /// <summary>
     /// Called when the page is navigated away from. Triggers PageViewModel.OnNavigatedFromAsync.
     /// </summary>
+#pragma warning disable CA1031 // Catch generic Exception in async void event handler to prevent app crash
     protected override async void OnNavigatedFrom(NavigationEventArgs e)
     {
         base.OnNavigatedFrom(e);
@@ -84,7 +93,11 @@ public class BasePage : Page
             _hasNavigatedTo = false;
             try
             {
-                await viewModel.NotifyNavigatedFromAsync(e);
+                await viewModel.NotifyNavigatedFromAsync(e).ConfigureAwait(true);
+            }
+            catch (OperationCanceledException)
+            {
+                // Navigation was cancelled - expected behavior
             }
             catch (Exception ex)
             {
@@ -92,4 +105,5 @@ public class BasePage : Page
             }
         }
     }
+#pragma warning restore CA1031
 }

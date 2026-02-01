@@ -1,24 +1,14 @@
-using Uno.Extensions.Navigation;
-
 namespace UnoFramework.Navigation.Commands;
 
 /// <summary>
 /// Class-based implementation of <see cref="IUnoNavigationCommand"/>.
 /// Use this when you need a mutable command or inheritance.
 /// </summary>
-public class UnoNavigationCommand : IUnoNavigationCommand
+/// <param name="route">The route to navigate to.</param>
+public class UnoNavigationCommand(string route) : IUnoNavigationCommand
 {
-    /// <summary>
-    /// Creates a new navigation command for the specified route.
-    /// </summary>
-    /// <param name="route">The route to navigate to.</param>
-    public UnoNavigationCommand(string route)
-    {
-        Route = route;
-    }
-
     /// <inheritdoc />
-    public string Route { get; }
+    public string Route { get; } = route;
 
     /// <inheritdoc />
     public string Qualifier { get; set; } = Qualifiers.None;

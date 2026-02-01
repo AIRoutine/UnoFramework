@@ -8,6 +8,13 @@ public class NavigationException : Exception
     /// <summary>
     /// Creates a new navigation exception.
     /// </summary>
+    public NavigationException()
+    {
+    }
+
+    /// <summary>
+    /// Creates a new navigation exception.
+    /// </summary>
     /// <param name="message">The error message.</param>
     public NavigationException(string message) : base(message)
     {

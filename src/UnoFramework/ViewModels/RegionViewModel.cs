@@ -5,34 +5,23 @@ namespace UnoFramework.ViewModels;
 /// Provides OnNavigatedToAsync and OnNavigatedFromAsync methods for region lifecycle.
 /// These methods are called from the BaseRegionControl's Loaded/Unloaded events.
 /// </summary>
-public abstract partial class RegionViewModel : ViewModelBase
+public abstract partial class RegionViewModel(BaseServices baseServices) : ViewModelBase(baseServices)
 {
-    /// <summary>
-    /// Creates a new RegionViewModel.
-    /// </summary>
-    protected RegionViewModel(BaseServices baseServices) : base(baseServices)
-    {
-    }
-
     /// <summary>
     /// Called when the region is navigated to or becomes visible.
     /// Override this method to load data or perform initialization when the region becomes active.
     /// </summary>
     /// <param name="ct">Cancellation token that is cancelled when navigating away.</param>
-    protected virtual Task OnNavigatedToAsync(CancellationToken ct = default)
-    {
-        return Task.CompletedTask;
-    }
+    protected virtual Task OnNavigatedToAsync(CancellationToken ct = default) =>
+        Task.CompletedTask;
 
     /// <summary>
     /// Called when the region is navigated away from or becomes hidden.
     /// Override this method to save state or perform cleanup when leaving the region.
     /// </summary>
     /// <param name="ct">Cancellation token.</param>
-    protected virtual Task OnNavigatedFromAsync(CancellationToken ct = default)
-    {
-        return Task.CompletedTask;
-    }
+    protected virtual Task OnNavigatedFromAsync(CancellationToken ct = default) =>
+        Task.CompletedTask;
 
     /// <summary>
     /// Framework entry point called from BaseRegionControl.OnLoaded.
@@ -42,8 +31,8 @@ public abstract partial class RegionViewModel : ViewModelBase
     {
         BeginNavigationScope();
         var ct = NavigationToken;
-        await EnsureInitializedAsync(ct);
-        await OnNavigatedToAsync(ct);
+        await EnsureInitializedAsync(ct).ConfigureAwait(true);
+        await OnNavigatedToAsync(ct).ConfigureAwait(true);
     }
 
     /// <summary>
@@ -54,7 +43,7 @@ public abstract partial class RegionViewModel : ViewModelBase
     {
         try
         {
-            await OnNavigatedFromAsync(CancellationToken.None);
+            await OnNavigatedFromAsync(CancellationToken.None).ConfigureAwait(true);
         }
         finally
         {

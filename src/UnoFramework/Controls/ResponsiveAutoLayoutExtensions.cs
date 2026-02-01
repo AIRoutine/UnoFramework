@@ -1,5 +1,3 @@
-using Uno.Toolkit.UI;
-
 namespace UnoFramework.Controls;
 
 /// <summary>
@@ -27,13 +25,32 @@ public static class ResponsiveAutoLayoutExtensions
     {
         var responsive = new ResponsiveExtension();
 
-        if (narrowest.HasValue) responsive.Narrowest = narrowest.Value;
-        if (narrow.HasValue) responsive.Narrow = narrow.Value;
-        if (normal.HasValue) responsive.Normal = normal.Value;
-        if (wide.HasValue) responsive.Wide = wide.Value;
-        if (widest.HasValue) responsive.Widest = widest.Value;
+        if (narrowest.HasValue)
+        {
+            responsive.Narrowest = narrowest.Value;
+        }
 
-        ResponsiveExtension.Install(element, typeof(AutoLayout), nameof(AutoLayout.Padding), responsive);
+        if (narrow.HasValue)
+        {
+            responsive.Narrow = narrow.Value;
+        }
+
+        if (normal.HasValue)
+        {
+            responsive.Normal = normal.Value;
+        }
+
+        if (wide.HasValue)
+        {
+            responsive.Wide = wide.Value;
+        }
+
+        if (widest.HasValue)
+        {
+            responsive.Widest = widest.Value;
+        }
+
+        _ = ResponsiveExtension.Install(element, typeof(AutoLayout), nameof(AutoLayout.Padding), responsive);
         return element;
     }
 
@@ -57,13 +74,32 @@ public static class ResponsiveAutoLayoutExtensions
     {
         var responsive = new ResponsiveExtension();
 
-        if (narrowest.HasValue) responsive.Narrowest = narrowest.Value;
-        if (narrow.HasValue) responsive.Narrow = narrow.Value;
-        if (normal.HasValue) responsive.Normal = normal.Value;
-        if (wide.HasValue) responsive.Wide = wide.Value;
-        if (widest.HasValue) responsive.Widest = widest.Value;
+        if (narrowest.HasValue)
+        {
+            responsive.Narrowest = narrowest.Value;
+        }
 
-        ResponsiveExtension.Install(element, typeof(AutoLayout), nameof(AutoLayout.Spacing), responsive);
+        if (narrow.HasValue)
+        {
+            responsive.Narrow = narrow.Value;
+        }
+
+        if (normal.HasValue)
+        {
+            responsive.Normal = normal.Value;
+        }
+
+        if (wide.HasValue)
+        {
+            responsive.Wide = wide.Value;
+        }
+
+        if (widest.HasValue)
+        {
+            responsive.Widest = widest.Value;
+        }
+
+        _ = ResponsiveExtension.Install(element, typeof(AutoLayout), nameof(AutoLayout.Spacing), responsive);
         return element;
     }
 }

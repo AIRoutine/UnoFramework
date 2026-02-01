@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Logging;
-using Shiny.Mediator;
 using UnoFramework.Navigation.Commands;
 using UnoFramework.Navigation.Exceptions;
 
@@ -9,17 +8,12 @@ namespace UnoFramework.Navigation.Handlers;
 /// Handles <see cref="IUnoRegionNavigationCommand"/> by navigating within a named region.
 /// </summary>
 /// <typeparam name="TCommand">The command type implementing <see cref="IUnoRegionNavigationCommand"/>.</typeparam>
+/// <param name="logger">The logger instance.</param>
 [Service(UnoFrameworkService.Lifetime, TryAdd = UnoFrameworkService.TryAdd)]
-public class UnoRegionNavigationCommandHandler<TCommand> : ICommandHandler<TCommand>
+public class UnoRegionNavigationCommandHandler<TCommand>(ILogger<UnoRegionNavigationCommandHandler<TCommand>> logger) : ICommandHandler<TCommand>
     where TCommand : IUnoRegionNavigationCommand
 {
-    private readonly ILogger<UnoRegionNavigationCommandHandler<TCommand>> _logger;
-
-    public UnoRegionNavigationCommandHandler(ILogger<UnoRegionNavigationCommandHandler<TCommand>> logger)
-    {
-        _logger = logger;
-    }
-
+    /// <inheritdoc />
     public async Task Handle(TCommand command, IMediatorContext context, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(command.Navigator, nameof(command.Navigator));
@@ -29,7 +23,7 @@ public class UnoRegionNavigationCommandHandler<TCommand> : ICommandHandler<TComm
         // Build the route path: RegionName/ViewName
         var route = $"{command.RegionName}/{command.ViewName}";
 
-        _logger.LogDebug(
+        logger.LogDebug(
             "Navigating to view '{ViewName}' in region '{RegionName}' (route: '{Route}')",
             command.ViewName,
             command.RegionName,
@@ -41,7 +35,7 @@ public class UnoRegionNavigationCommandHandler<TCommand> : ICommandHandler<TComm
                 sender: this,
                 route: route,
                 data: command.Data,
-                cancellation: cancellationToken);
+                cancellation: cancellationToken).ConfigureAwait(true);
 
             if (response?.Success != true)
             {
@@ -53,7 +47,7 @@ public class UnoRegionNavigationCommandHandler<TCommand> : ICommandHandler<TComm
                 };
             }
 
-            _logger.LogDebug(
+            logger.LogDebug(
                 "Successfully navigated to '{ViewName}' in region '{RegionName}'",
                 command.ViewName,
                 command.RegionName);
@@ -64,7 +58,7 @@ public class UnoRegionNavigationCommandHandler<TCommand> : ICommandHandler<TComm
         }
         catch (Exception ex)
         {
-            _logger.LogError(
+            logger.LogError(
                 ex,
                 "Navigation to '{ViewName}' in region '{RegionName}' threw an exception",
                 command.ViewName,

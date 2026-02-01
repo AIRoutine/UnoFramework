@@ -12,6 +12,9 @@ public static class BusyOverlayExtensions
     /// </summary>
     public static BusyOverlay IsBusy(this BusyOverlay element, Func<bool> binding)
     {
+        ArgumentNullException.ThrowIfNull(element);
+        ArgumentNullException.ThrowIfNull(binding);
+
         var bindingExpression = new Binding
         {
             Path = new Microsoft.UI.Xaml.PropertyPath(binding.GetBindingPath()),
@@ -26,6 +29,9 @@ public static class BusyOverlayExtensions
     /// </summary>
     public static BusyOverlay BusyMessage(this BusyOverlay element, Func<string?> binding)
     {
+        ArgumentNullException.ThrowIfNull(element);
+        ArgumentNullException.ThrowIfNull(binding);
+
         var bindingExpression = new Binding
         {
             Path = new Microsoft.UI.Xaml.PropertyPath(binding.GetBindingPath()),
@@ -50,7 +56,7 @@ public static class BusyOverlayExtensions
         // Handle compiler-generated property getters (e.g., get_PropertyName)
         if (propertyName.StartsWith("get_", StringComparison.Ordinal))
         {
-            propertyName = propertyName.Substring(4);
+            propertyName = propertyName[4..];
         }
 
         return propertyName;

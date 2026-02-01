@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Logging;
-using Shiny.Mediator;
 using UnoFramework.Navigation.Commands;
 using UnoFramework.Navigation.Exceptions;
 
@@ -9,23 +8,18 @@ namespace UnoFramework.Navigation.Handlers;
 /// Handles <see cref="IUnoNavigationCommand"/> by invoking Uno Extensions Navigation.
 /// </summary>
 /// <typeparam name="TCommand">The command type implementing <see cref="IUnoNavigationCommand"/>.</typeparam>
+/// <param name="logger">The logger instance.</param>
 [Service(UnoFrameworkService.Lifetime, TryAdd = UnoFrameworkService.TryAdd)]
-public class UnoNavigationCommandHandler<TCommand> : ICommandHandler<TCommand>
+public class UnoNavigationCommandHandler<TCommand>(ILogger<UnoNavigationCommandHandler<TCommand>> logger) : ICommandHandler<TCommand>
     where TCommand : IUnoNavigationCommand
 {
-    private readonly ILogger<UnoNavigationCommandHandler<TCommand>> _logger;
-
-    public UnoNavigationCommandHandler(ILogger<UnoNavigationCommandHandler<TCommand>> logger)
-    {
-        _logger = logger;
-    }
-
+    /// <inheritdoc />
     public async Task Handle(TCommand command, IMediatorContext context, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(command.Navigator, nameof(command.Navigator));
         ArgumentException.ThrowIfNullOrWhiteSpace(command.Route, nameof(command.Route));
 
-        _logger.LogDebug(
+        logger.LogDebug(
             "Navigating to route '{Route}' with qualifier '{Qualifier}'",
             command.Route,
             command.Qualifier);
@@ -37,7 +31,7 @@ public class UnoNavigationCommandHandler<TCommand> : ICommandHandler<TCommand>
                 route: command.Route,
                 qualifier: command.Qualifier,
                 data: command.Data,
-                cancellation: cancellationToken);
+                cancellation: cancellationToken).ConfigureAwait(true);
 
             if (response?.Success != true)
             {
@@ -47,7 +41,7 @@ public class UnoNavigationCommandHandler<TCommand> : ICommandHandler<TCommand>
                 };
             }
 
-            _logger.LogDebug("Successfully navigated to '{Route}'", command.Route);
+            logger.LogDebug("Successfully navigated to '{Route}'", command.Route);
         }
         catch (NavigationException)
         {
@@ -55,7 +49,7 @@ public class UnoNavigationCommandHandler<TCommand> : ICommandHandler<TCommand>
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Navigation to '{Route}' threw an exception", command.Route);
+            logger.LogError(ex, "Navigation to '{Route}' threw an exception", command.Route);
             throw new NavigationException($"Navigation to '{command.Route}' failed: {ex.Message}", ex)
             {
                 Route = command.Route

@@ -1,7 +1,3 @@
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
-
 namespace UnoFramework.Controls;
 
 /// <summary>
@@ -9,6 +5,9 @@ namespace UnoFramework.Controls;
 /// </summary>
 public partial class BusyOverlay : ContentControl
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="BusyOverlay"/> class.
+    /// </summary>
     public BusyOverlay()
     {
         DefaultStyleKey = typeof(BusyOverlay);
@@ -18,6 +17,9 @@ public partial class BusyOverlay : ContentControl
 
     #region IsBusy DependencyProperty
 
+    /// <summary>
+    /// Identifies the <see cref="IsBusy"/> dependency property.
+    /// </summary>
     public static readonly DependencyProperty IsBusyProperty = DependencyProperty.Register(
         nameof(IsBusy),
         typeof(bool),
@@ -45,6 +47,9 @@ public partial class BusyOverlay : ContentControl
 
     #region BusyMessage DependencyProperty
 
+    /// <summary>
+    /// Identifies the <see cref="BusyMessage"/> dependency property.
+    /// </summary>
     public static readonly DependencyProperty BusyMessageProperty = DependencyProperty.Register(
         nameof(BusyMessage),
         typeof(string),
@@ -72,6 +77,9 @@ public partial class BusyOverlay : ContentControl
 
     #region OverlayBackground DependencyProperty
 
+    /// <summary>
+    /// Identifies the <see cref="OverlayBackground"/> dependency property.
+    /// </summary>
     public static readonly DependencyProperty OverlayBackgroundProperty = DependencyProperty.Register(
         nameof(OverlayBackground),
         typeof(Brush),
@@ -89,6 +97,7 @@ public partial class BusyOverlay : ContentControl
 
     #endregion
 
+    /// <inheritdoc />
     protected override void OnApplyTemplate()
     {
         base.OnApplyTemplate();
@@ -97,13 +106,13 @@ public partial class BusyOverlay : ContentControl
 
     private void UpdateVisualState()
     {
-        VisualStateManager.GoToState(this, IsBusy ? "Busy" : "NotBusy", true);
+        _ = VisualStateManager.GoToState(this, IsBusy ? "Busy" : "NotBusy", true);
         UpdateMessageVisualState();
     }
 
     private void UpdateMessageVisualState()
     {
         var hasMessage = !string.IsNullOrWhiteSpace(BusyMessage);
-        VisualStateManager.GoToState(this, hasMessage ? "HasMessage" : "NoMessage", true);
+        _ = VisualStateManager.GoToState(this, hasMessage ? "HasMessage" : "NoMessage", true);
     }
 }

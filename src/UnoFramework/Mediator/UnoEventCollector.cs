@@ -1,11 +1,5 @@
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
-using Shiny.Mediator;
 using Shiny.Mediator.Infrastructure;
-using Uno.Extensions.Navigation;
 
 namespace UnoFramework.Mediator;
 
@@ -16,23 +10,32 @@ namespace UnoFramework.Mediator;
 [Service(UnoFrameworkService.Lifetime, TryAdd = UnoFrameworkService.TryAdd)]
 public class UnoEventCollector : IEventCollector
 {
-    readonly IServiceProvider _serviceProvider;
-    readonly ILogger<UnoEventCollector> _logger;
-    readonly List<WeakReference<FrameworkElement>> _trackedViews = [];
-    readonly object _lock = new();
+    private readonly IServiceProvider _serviceProvider;
+    private readonly ILogger<UnoEventCollector> _logger;
+    private readonly List<WeakReference<FrameworkElement>> _trackedViews = [];
+    private readonly Lock _lock = new();
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="UnoEventCollector"/> class.
+    /// </summary>
+    /// <param name="serviceProvider">The service provider for resolving DI-registered handlers.</param>
+    /// <param name="routeNotifier">The route notifier for tracking navigation changes.</param>
+    /// <param name="logger">The logger instance.</param>
     public UnoEventCollector(IServiceProvider serviceProvider, IRouteNotifier routeNotifier, ILogger<UnoEventCollector> logger)
     {
+        ArgumentNullException.ThrowIfNull(routeNotifier);
         _serviceProvider = serviceProvider;
         _logger = logger;
         routeNotifier.RouteChanged += OnRouteChanged;
     }
 
-    void OnRouteChanged(object? sender, RouteChangedEventArgs e)
+    private void OnRouteChanged(object? sender, RouteChangedEventArgs e)
     {
         var view = e.Region?.View;
         if (view is null)
+        {
             return;
+        }
 
         lock (_lock)
         {
@@ -47,6 +50,7 @@ public class UnoEventCollector : IEventCollector
         }
     }
 
+    /// <inheritdoc />
     public IReadOnlyList<IEventHandler<TEvent>> GetHandlers<TEvent>() where TEvent : IEvent
     {
         _logger.LogDebug("Collecting event handlers for Event Type: {Type}",
@@ -74,7 +78,9 @@ public class UnoEventCollector : IEventCollector
             foreach (var weakRef in _trackedViews)
             {
                 if (!weakRef.TryGetTarget(out var view))
+                {
                     continue;
+                }
 
                 // Collect handlers from visual tree (downwards)
                 CollectHandlersFromVisualTree(view, handlers, visited);
@@ -90,10 +96,12 @@ public class UnoEventCollector : IEventCollector
         return handlers;
     }
 
-    void CollectHandlersFromVisualTree<TEvent>(DependencyObject element, List<IEventHandler<TEvent>> handlers, HashSet<object> visited) where TEvent : IEvent
+    private void CollectHandlersFromVisualTree<TEvent>(DependencyObject element, List<IEventHandler<TEvent>> handlers, HashSet<object> visited) where TEvent : IEvent
     {
         if (element is null || !visited.Add(element))
+        {
             return;
+        }
 
         // Check if the element itself is a handler (element was just added to visited, so no need to check again)
         if (element is IEventHandler<TEvent> viewHandler)
@@ -130,7 +138,7 @@ public class UnoEventCollector : IEventCollector
     /// This is essential for finding handlers in shell/container pages like MainPage
     /// that host navigation content regions.
     /// </summary>
-    void CollectHandlersFromParentChain<TEvent>(DependencyObject element, List<IEventHandler<TEvent>> handlers, HashSet<object> visited) where TEvent : IEvent
+    private void CollectHandlersFromParentChain<TEvent>(DependencyObject element, List<IEventHandler<TEvent>> handlers, HashSet<object> visited) where TEvent : IEvent
     {
         var parent = VisualTreeHelper.GetParent(element);
 
@@ -162,18 +170,19 @@ public class UnoEventCollector : IEventCollector
         }
     }
 
-    void CleanupDeadReferences()
-    {
-        _trackedViews.RemoveAll(wr => !wr.TryGetTarget(out _));
-    }
+    private void CleanupDeadReferences() =>
+        _ = _trackedViews.RemoveAll(wr => !wr.TryGetTarget(out _));
 
-    bool IsAlreadyTracked(FrameworkElement view)
+    private bool IsAlreadyTracked(FrameworkElement view)
     {
         foreach (var wr in _trackedViews)
         {
             if (wr.TryGetTarget(out var v) && ReferenceEquals(v, view))
+            {
                 return true;
+            }
         }
+
         return false;
     }
 }

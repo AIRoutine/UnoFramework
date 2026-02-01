@@ -19,15 +19,16 @@ public class BaseRegionControl : UserControl
     /// </summary>
     public BaseRegionControl()
     {
-        Loaded += OnLoaded;
-        Unloaded += OnUnloaded;
-        DataContextChanged += OnDataContextChanged;
+        Loaded += OnLoadedAsync;
+        Unloaded += OnUnloadedAsync;
+        DataContextChanged += OnDataContextChangedAsync;
     }
 
     /// <summary>
     /// Handles DataContextChanged - triggers OnNavigatedToAsync if control is already loaded.
     /// </summary>
-    private async void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+#pragma warning disable CA1031 // Catch generic Exception in async void event handler to prevent app crash
+    private async void OnDataContextChangedAsync(FrameworkElement sender, DataContextChangedEventArgs args)
     {
         // If we're loaded but haven't called the ViewModel method yet, do it now
         if (_isLoaded && !_hasNavigatedTo && DataContext is RegionViewModel viewModel)
@@ -35,7 +36,11 @@ public class BaseRegionControl : UserControl
             _hasNavigatedTo = true;
             try
             {
-                await viewModel.NotifyNavigatedToAsync();
+                await viewModel.NotifyNavigatedToAsync().ConfigureAwait(true);
+            }
+            catch (OperationCanceledException)
+            {
+                // Navigation was cancelled - expected behavior
             }
             catch (Exception ex)
             {
@@ -43,12 +48,14 @@ public class BaseRegionControl : UserControl
             }
         }
     }
+#pragma warning restore CA1031
 
     /// <summary>
     /// Called when the control is loaded. Triggers RegionViewModel.OnNavigatedToAsync if DataContext is a RegionViewModel.
     /// If DataContext is not set yet, waits for DataContextChanged.
     /// </summary>
-    private async void OnLoaded(object sender, RoutedEventArgs e)
+#pragma warning disable CA1031 // Catch generic Exception in async void event handler to prevent app crash
+    private async void OnLoadedAsync(object sender, RoutedEventArgs e)
     {
         _isLoaded = true;
 
@@ -58,7 +65,11 @@ public class BaseRegionControl : UserControl
             _hasNavigatedTo = true;
             try
             {
-                await viewModel.NotifyNavigatedToAsync();
+                await viewModel.NotifyNavigatedToAsync().ConfigureAwait(true);
+            }
+            catch (OperationCanceledException)
+            {
+                // Navigation was cancelled - expected behavior
             }
             catch (Exception ex)
             {
@@ -67,11 +78,13 @@ public class BaseRegionControl : UserControl
         }
         // else: DataContext not set yet - wait for DataContextChanged
     }
+#pragma warning restore CA1031
 
     /// <summary>
     /// Called when the control is unloaded. Triggers RegionViewModel.OnNavigatedFromAsync if DataContext is a RegionViewModel.
     /// </summary>
-    private async void OnUnloaded(object sender, RoutedEventArgs e)
+#pragma warning disable CA1031 // Catch generic Exception in async void event handler to prevent app crash
+    private async void OnUnloadedAsync(object sender, RoutedEventArgs e)
     {
         _isLoaded = false;
 
@@ -80,7 +93,11 @@ public class BaseRegionControl : UserControl
             _hasNavigatedTo = false;
             try
             {
-                await viewModel.NotifyNavigatedFromAsync();
+                await viewModel.NotifyNavigatedFromAsync().ConfigureAwait(true);
+            }
+            catch (OperationCanceledException)
+            {
+                // Navigation was cancelled - expected behavior
             }
             catch (Exception ex)
             {
@@ -88,4 +105,5 @@ public class BaseRegionControl : UserControl
             }
         }
     }
+#pragma warning restore CA1031
 }
