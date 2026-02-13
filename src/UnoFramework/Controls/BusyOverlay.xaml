@@ -19,7 +19,7 @@
                         <Grid x:Name="BusyOverlayPanel"
                               Visibility="Collapsed">
                             <Grid.Background>
-                                <SolidColorBrush Color="{ThemeResource SurfaceColor}" />
+                                <SolidColorBrush Color="{ThemeResource SurfaceColor}" Opacity="0.85" />
                             </Grid.Background>
 
                             <StackPanel HorizontalAlignment="Center"
