@@ -8,6 +8,8 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     <IsRoslynComponent>true</IsRoslynComponent>
+    <RuntimeIdentifier />
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <Description>Source generators and analyzers for UnoFramework including UnoCommand and XAML Style Analyzer</Description>
   </PropertyGroup>
 
