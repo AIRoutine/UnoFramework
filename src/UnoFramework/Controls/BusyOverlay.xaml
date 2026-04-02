@@ -20,7 +20,7 @@
                               Visibility="Collapsed"
                               Background="{TemplateBinding OverlayBackground}">
                             <Grid.Background>
-                                <SolidColorBrush Color="Black" Opacity="0.5" />
+                                <SolidColorBrush Color="{ThemeResource SurfaceColor}" Opacity="1.0" />
                             </Grid.Background>
 
                             <StackPanel HorizontalAlignment="Center"
@@ -31,7 +31,7 @@
                                               Height="48" />
                                 <TextBlock x:Name="MessageTextBlock"
                                            Text="{TemplateBinding BusyMessage}"
-                                           Foreground="White"
+                                           Foreground="{ThemeResource OnSurfaceBrush}"
                                            FontSize="14"
                                            TextAlignment="Center"
                                            Visibility="Collapsed" />
