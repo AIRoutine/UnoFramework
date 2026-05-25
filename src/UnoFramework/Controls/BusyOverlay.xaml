@@ -15,25 +15,36 @@
                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
 
-                        <!-- Busy Overlay - solides Schwarz mit weissem Text, damit Indicator
-                             auf jedem Untergrund (Split-Layouts, helle/dunkle Themes) lesbar bleibt -->
+                        <!-- Busy Overlay: leicht abgedunkelter Backdrop + zentrierte schwarze Card
+                             mit weissem Spinner und Text, damit der Indicator auf jedem Untergrund
+                             (Split-Layouts, helle/dunkle Themes) eindeutig sichtbar ist - ohne den
+                             ganzen Bildschirm zu schwaerzen. -->
                         <Grid x:Name="BusyOverlayPanel"
-                              Background="Black"
+                              Background="#33000000"
                               Visibility="Collapsed">
 
-                            <StackPanel HorizontalAlignment="Center"
-                                        VerticalAlignment="Center"
-                                        Spacing="16">
-                                <ProgressRing IsActive="True"
-                                              Width="48"
-                                              Height="48"
-                                              Foreground="White" />
-                                <TextBlock Text="{Binding BusyMessage, RelativeSource={RelativeSource TemplatedParent}}"
-                                           Foreground="White"
-                                           FontSize="14"
-                                           TextAlignment="Center"
-                                           Visibility="{Binding BusyMessage, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource NullToCollapsedConverter}, FallbackValue=Collapsed}" />
-                            </StackPanel>
+                            <Border Background="Black"
+                                    CornerRadius="8"
+                                    Padding="24,20"
+                                    MinWidth="120"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center">
+                                <StackPanel HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            Spacing="12">
+                                    <ProgressRing IsActive="True"
+                                                  Width="40"
+                                                  Height="40"
+                                                  Foreground="White" />
+                                    <TextBlock Text="{Binding BusyMessage, RelativeSource={RelativeSource TemplatedParent}}"
+                                               Foreground="White"
+                                               FontSize="13"
+                                               TextAlignment="Center"
+                                               TextWrapping="Wrap"
+                                               MaxWidth="280"
+                                               Visibility="{Binding BusyMessage, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource NullToCollapsedConverter}, FallbackValue=Collapsed}" />
+                                </StackPanel>
+                            </Border>
                         </Grid>
 
                         <VisualStateManager.VisualStateGroups>
