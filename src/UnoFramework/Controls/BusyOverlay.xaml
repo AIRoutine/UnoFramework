@@ -15,19 +15,19 @@
                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
 
-                        <!-- Busy Overlay -->
+                        <!-- Busy Overlay - solides Schwarz mit weissem Text, damit Indicator
+                             auf jedem Untergrund (Split-Layouts, helle/dunkle Themes) lesbar bleibt -->
                         <Grid x:Name="BusyOverlayPanel"
+                              Background="Black"
                               Visibility="Collapsed">
-                            <Grid.Background>
-                                <SolidColorBrush Color="{ThemeResource SurfaceColor}" Opacity="0.85" />
-                            </Grid.Background>
 
                             <StackPanel HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
                                         Spacing="16">
                                 <ProgressRing IsActive="True"
                                               Width="48"
-                                              Height="48" />
+                                              Height="48"
+                                              Foreground="White" />
                                 <TextBlock Text="{Binding BusyMessage, RelativeSource={RelativeSource TemplatedParent}}"
                                            Foreground="White"
                                            FontSize="14"
